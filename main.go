@@ -1,10 +1,24 @@
 package main
 
 import (
-	"log"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"os"
 
-	"/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
+
+type Users []interface{}
+
+type User struct {
+	Id    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
@@ -16,7 +30,7 @@ func main() {
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	r.Use(gin.Recovery())
 
-	r.GET("/api/getUsers", handlers.getUsers)
+	r.GET("/api/getUsers", getUsers)
 	r.GET("/api/getToken", basicAuth, getToken)
 
 	authorized := r.Group("/api")
@@ -24,9 +38,9 @@ func main() {
 	// AuthRequired() middleware just in the "authorized" group.
 	authorized.Use(AuthRequired())
 	{
-		authorized.GET("/getUser/:id", handlers.getUser)
-		authorized.POST("/addUser", handlers.addUser)
-		authorized.DELETE("/deleteUser", handlers.deleteUser)
+		authorized.GET("/getUser/:id", getUser)
+		authorized.POST("/addUser", addUser)
+		authorized.DELETE("/deleteUser", deleteUser)
 	}
 
 	r.Run(":8081") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
@@ -59,6 +73,50 @@ func AuthRequired() gin.HandlerFunc {
 		//Find email in database
 		//Compare stored token with token provided in header
 		//Return - Authentication was success or fail
+	}
+}
+
+// func getToken(c *gin.Context) {
+// }
+
+func getUsers(c *gin.Context) {
+
+	var users = Users{}
+
+	setUsersFromFile(&users, "users.json")
+
+	if err := c.ShouldBindWith(&users, binding.Query); err == nil {
+		c.JSON(http.StatusOK, gin.H{"status": true, "message": "Успешно", "result": users})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"status": false, "message": err.Error(), "result": "[]"})
+	}
+}
+
+func getUser(c *gin.Context) {
+}
+
+func addUser(c *gin.Context) {
+}
+
+func deleteUser(c *gin.Context) {
+}
+
+func setUsersFromFile(u *Users, file string) {
+
+	pwd, _ := os.Getwd()
+	// Чтение содержимого файла
+	fileData, err := ioutil.ReadFile(pwd + string(os.PathSeparator) + file)
+
+	if err != nil {
+		log.Fatal("ERR_FILE. Ошибка чтения файла: ", err)
+	}
+
+	err = nil
+
+	err = json.Unmarshal([]byte(string(fileData)), &u)
+
+	if err != nil {
+		log.Fatal("ERR_JSON. ошибка распознавания json: ", err)
 	}
 }
 
