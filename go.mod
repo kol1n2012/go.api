@@ -33,3 +33,9 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/kol1n2012/go.api/models => ./models
+
+replace github.com/kol1n2012/go.api/handlers => ./handlers
+
+replace github.com/kol1n2012/go.api/api => ./api
