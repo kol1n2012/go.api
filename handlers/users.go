@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/kol1n2012/go.api/api/sourse"
 	"github.com/kol1n2012/go.api/models"
-	"github.com/kol1n2012/go.api/models/sourse"
 )
 
 func GetUsers(c *gin.Context) {
