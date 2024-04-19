@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func SetCollectionFromFile(u *models.Users, file string) (bool, string) {
+func SetCollectionFromFile(c *models.Collection, file string) (bool, string) {
 	message := "Успешно"
 	status := true
 
@@ -26,7 +26,7 @@ func SetCollectionFromFile(u *models.Users, file string) (bool, string) {
 	} else {
 		err = nil
 
-		err = json.Unmarshal([]byte(string(fileData)), &u)
+		err = json.Unmarshal([]byte(string(fileData)), &c.Collections)
 
 		if err != nil {
 			message = "Ошибка распознавания json"

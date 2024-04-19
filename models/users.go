@@ -30,6 +30,11 @@ func (c *Users) GetCollection() []User {
 func (c *Users) SetCollection() {
 
 	pwd, _ := os.Getwd()
+
+	switch os.Getenv("DATA_SOURSE_DRIVER") {
+	case "file":
+
+	}
 	// Чтение содержимого файла
 	fileData, err := os.ReadFile(pwd + string(os.PathSeparator) + "users" + ".json")
 	if err != nil {
