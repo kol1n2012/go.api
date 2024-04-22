@@ -5,16 +5,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-
-	//	"github.com/kol1n2012/go.api/api/sourse"
 	"github.com/kol1n2012/go.api/models"
 )
 
 func GetUsers(c *gin.Context) {
 
-	var users = new(models.Users)
-
-	users.SetCollection()
+	var users = models.NewUser()
 
 	if err := c.ShouldBindWith(&users, binding.Query); err == nil {
 		c.JSON(http.StatusOK, gin.H{"status": true, "message": "успех", "result": users.GetCollection()})
