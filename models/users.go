@@ -2,9 +2,12 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -70,4 +73,22 @@ func (c *Users) SetCollectionFromMysql(sourses string) {
 		return
 	}
 
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("MYSQL_LOGIN"),
+		os.Getenv("MYSQL_PASSWORD"),
+		os.Getenv("MYSQL_HOST"),
+		os.Getenv("MYSQL_PORT"),
+		os.Getenv("MYSQL_DB"),
+	)
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"message": "ERR_MYSQL. Ошибка подключения к Базе данных",
+		}).Error("User list")
+	} else {
+		db.Find(&c.collection)
+	}
 }
