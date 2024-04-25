@@ -10,3 +10,10 @@ type Collections interface {
 type Collection struct {
 	Collections
 }
+
+type Params struct {
+	Filter map[string]any
+	Order  map[string]string
+	Limit  int
+	Select []string
+}

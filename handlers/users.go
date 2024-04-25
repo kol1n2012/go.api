@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -10,7 +11,9 @@ import (
 
 func GetUsers(c *gin.Context) {
 
-	var users = models.NewUser()
+	var params = new(models.Params)
+
+	var users = models.NewUsers(params)
 
 	if err := c.ShouldBindWith(&users, binding.Query); err == nil {
 		c.JSON(http.StatusOK, gin.H{"status": true, "message": "успех", "result": users.GetCollection()})
@@ -20,6 +23,24 @@ func GetUsers(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
+
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	var params = new(models.Params)
+
+	params.Filter = map[string]any{
+		"id": id,
+	}
+
+	params.Limit = 1
+
+	var users = models.NewUsers(params)
+
+	if err := c.ShouldBindWith(&users, binding.Query); err == nil {
+		c.JSON(http.StatusOK, gin.H{"status": true, "message": "успех", "result": users.GetCollection()})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"status": false, "message": err.Error(), "result": "[]"})
+	}
 }
 
 func AddUser(c *gin.Context) {

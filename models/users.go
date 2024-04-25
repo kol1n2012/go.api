@@ -19,13 +19,16 @@ type User struct {
 type Users struct {
 	Collection
 	collection []User
+	params     Params
 }
 
-func NewUser() *Users {
+func NewUsers(params *Params) *Users {
 
 	users := &Users{}
 
 	var sourse = "users"
+
+	users.setFilter(params.Filter)
 
 	switch os.Getenv("DATA_SOURSE_DRIVER") {
 	case "file":
@@ -67,11 +70,19 @@ func (c *Users) SetCollectionFromFile(sourses string) {
 	}
 }
 
+func (c *Users) setFilter(filter map[string]any) {
+	c.params.Filter = filter
+}
+
 func (c *Users) SetCollectionFromMysql(sourses string) {
 
 	if len(sourses) == 0 {
 		return
 	}
+
+	f := c.params.Filter
+
+	l := c.params.Limit
 
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
@@ -84,11 +95,29 @@ func (c *Users) SetCollectionFromMysql(sourses string) {
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
+	db.Model(&User{})
+
+	if l > 0 {
+		db.Limit(l)
+	}
+
 	if err != nil {
 		log.WithFields(log.Fields{
 			"message": "ERR_MYSQL. Ошибка подключения к Базе данных",
 		}).Error("User list")
 	} else {
-		db.Find(&c.collection)
+		if len(f) > 0 {
+
+			filter := map[string]interface{}{}
+
+			for k, v := range f {
+				filter[k] = v
+			}
+
+			db.Where(filter).Find(&c.collection)
+		} else {
+			db.Find(&c.collection)
+		}
+
 	}
 }
