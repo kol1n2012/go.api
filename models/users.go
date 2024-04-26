@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
@@ -28,6 +29,8 @@ func NewUsers(params *Params) *Users {
 
 	var sourse = "users"
 
+	users.setLimit(params.Limit)
+
 	users.setFilter(params.Filter)
 
 	switch os.Getenv("DATA_SOURSE_DRIVER") {
@@ -49,6 +52,10 @@ func (c *Users) SetCollectionFromFile(sourses string) {
 		return
 	}
 
+	f := c.params.Filter
+
+	l := c.params.Limit
+
 	pwd, _ := os.Getwd()
 
 	// Чтение содержимого файла
@@ -62,6 +69,34 @@ func (c *Users) SetCollectionFromFile(sourses string) {
 
 		err = json.Unmarshal([]byte(string(fileData)), &c.collection)
 
+		if len(f) > 0 {
+
+			filtered := []User{}
+
+			for _, user := range c.collection {
+
+				result := false
+
+				for k, v := range f {
+					var reflectValue reflect.Value = reflect.ValueOf(&user)
+
+					if reflect.Indirect(reflectValue).FieldByName(k).Interface() == v {
+						result = true
+					}
+				}
+
+				if result {
+					filtered = append(filtered, user)
+				}
+			}
+
+			c.collection = filtered
+		}
+
+		if l > 0 && len(c.collection) > 0 {
+			c.collection = c.collection[:l]
+		}
+
 		if err != nil {
 			log.WithFields(log.Fields{
 				"message": "ERR_JSON. Ошибка распознавания json",
@@ -72,6 +107,10 @@ func (c *Users) SetCollectionFromFile(sourses string) {
 
 func (c *Users) setFilter(filter map[string]any) {
 	c.params.Filter = filter
+}
+
+func (c *Users) setLimit(limit int) {
+	c.params.Limit = limit
 }
 
 func (c *Users) SetCollectionFromMysql(sourses string) {

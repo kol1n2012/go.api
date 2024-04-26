@@ -29,7 +29,7 @@ func GetUser(c *gin.Context) {
 	var params = new(models.Params)
 
 	params.Filter = map[string]any{
-		"id": id,
+		"Id": id,
 	}
 
 	params.Limit = 1
